@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Цветочная лавка — бот</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--fon:#e7ebf0;--shapka:#517da2;--moe:#effdde;--bot:#fff;--tekst:#1b1f23;--ser:#7a8895;--kn:#3390ec}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1c2530;font-family:Manrope,system-ui,sans-serif}
+.tel{width:390px;height:780px;max-width:100vw;max-height:100vh;background:var(--fon);border-radius:36px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px #0008;border:10px solid #0b0f14}
+@media(max-width:420px){.tel{border-radius:0;border:0;height:100vh}}
+.shapka{background:var(--shapka);color:#fff;padding:14px 16px;display:flex;gap:12px;align-items:center}
+.ava{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#ff8fb1,#d6336c);display:grid;place-items:center;font-size:22px}
+.imya{font-weight:700}.status{font-size:13px;opacity:.8}
+.lenta{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:6px;background:#c8d8c0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='%23ffffff55'/%3E%3C/svg%3E")}
+.msg{max-width:80%;padding:8px 12px;border-radius:14px;font-size:15px;line-height:1.35;white-space:pre-wrap;word-wrap:break-word;color:var(--tekst);box-shadow:0 1px 1px #0002;animation:p .18s ease-out}
+.bot{background:var(--bot);align-self:flex-start;border-bottom-left-radius:4px}.ya{background:var(--moe);align-self:flex-end;border-bottom-right-radius:4px}
+@keyframes p{from{transform:translateY(6px);opacity:0}}
+.knopki{display:flex;flex-wrap:wrap;gap:6px;padding:6px 10px;background:var(--fon)}
+.knopki button{flex:1 1 45%;border:0;border-radius:10px;padding:10px;background:#fff;color:var(--kn);font:700 14px Manrope,sans-serif;cursor:pointer}
+.knopki button:disabled{opacity:.5}
+form{display:flex;gap:8px;padding:8px 10px 14px;background:#fff}
+input{flex:1;border:0;outline:0;font:15px Manrope,sans-serif;padding:10px}
+form button{border:0;background:var(--kn);color:#fff;border-radius:50%;width:42px;height:42px;font-size:18px;cursor:pointer}
+.pechat{font-size:13px;color:var(--ser);padding:0 14px 4px;height:18px}
+</style></head><body>
+<div class="tel">
+  <div class="shapka"><div class="ava">💐</div><div><div class="imya">Цветочная лавка</div><div class="status">бот</div></div></div>
+  <div class="lenta" id="lenta"></div>
+  <div class="pechat" id="pechat"></div>
+  <div class="knopki" id="knopki"></div>
+  <form id="forma"><input id="vvod" placeholder="Сообщение" autocomplete="off" maxlength="500"><button aria-label="Отправить">➤</button></form>
+</div>
+<script>
+const lenta=document.getElementById('lenta'),knopki=document.getElementById('knopki'),vvod=document.getElementById('vvod'),pechat=document.getElementById('pechat');
+let sid=null,zanyat=false;
+function soob(tekst,kto){const d=document.createElement('div');d.className='msg '+kto;d.textContent=tekst;lenta.append(d);lenta.scrollTop=lenta.scrollHeight}
+function kn(spisok){knopki.replaceChildren(...spisok.map(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=()=>otpravit(t);return b}))}
+async function otpravit(tekst,tiho){
+  if(zanyat)return; zanyat=true;                       // защита от двойного нажатия
+  knopki.querySelectorAll('button').forEach(b=>b.disabled=true);
+  if(!tiho)soob(tekst,'ya'); pechat.textContent='печатает…';
+  try{
+    const r=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sid,text:tekst})});
+    const d=await r.json(); if(!r.ok)throw 0;
+    sid=d.sid; for(const m of d.messages){await new Promise(z=>setTimeout(z,350));soob(m,'bot')} kn(d.buttons||[]);
+  }catch(e){soob('Не получилось связаться с ботом. Попробуйте ещё раз.','bot');knopki.querySelectorAll('button').forEach(b=>b.disabled=false)}
+  pechat.textContent=''; zanyat=false;
+}
+document.getElementById('forma').onsubmit=e=>{e.preventDefault();const t=vvod.value.trim();if(!t)return;vvod.value='';otpravit(t)};
+otpravit('/start',true);
+</script></body></html>

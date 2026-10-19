@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Абонемент в фитнес-клуб</title>
+<style>
+  :root {
+    --tekst: #1c1c1e;
+    --tihiy: #6b6b70;
+    --ramka: #d8d8dd;
+    --fokus: #2b6cb0;
+    --vybor: #eaf2fb;
+    --oshibka: #b3261e;
+    --uspeh: #1e6b3a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px 16px 40px;
+    font: 16px/1.45 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--tekst); background: #f7f7f9;
+  }
+  main { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 8px 0 16px; }
+  h2 { font-size: 17px; margin: 24px 0 10px; }
+  .tarify { display: grid; gap: 10px; grid-template-columns: 1fr; }
+  .tarif {
+    text-align: left; width: 100%; cursor: pointer;
+    background: #fff; border: 2px solid var(--ramka); border-radius: 12px;
+    padding: 14px; font: inherit; color: inherit;
+  }
+  .tarif .nazvanie { font-weight: 600; display: block; }
+  .tarif .cena { display: block; margin-top: 4px; }
+  .tarif .srok { display: block; color: var(--tihiy); font-size: 14px; margin-top: 2px; }
+  .tarif.vybran { border-color: var(--fokus); background: var(--vybor); }
+  .tarif:focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
+  form { background: #fff; border: 1px solid var(--ramka); border-radius: 12px; padding: 14px; }
+  .pole { margin-bottom: 12px; }
+  label { display: block; font-size: 14px; color: var(--tihiy); margin-bottom: 4px; }
+  input {
+    width: 100%; padding: 11px 12px; font: inherit; color: inherit;
+    border: 1px solid var(--ramka); border-radius: 10px; background: #fff;
+  }
+  input:focus { outline: 2px solid var(--fokus); outline-offset: 1px; border-color: var(--fokus); }
+  .ryad { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+  .oshibka { color: var(--oshibka); font-size: 13px; min-height: 17px; margin-top: 4px; }
+  #knopka {
+    width: 100%; padding: 14px; font: inherit; font-weight: 600; cursor: pointer;
+    background: var(--fokus); color: #fff; border: 0; border-radius: 10px;
+  }
+  #knopka:disabled { background: #9aa7b4; cursor: default; }
+  #itog { display: none; margin-top: 14px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--ramka); background: #fff; }
+  #itog[data-status="paid"] { border-color: var(--uspeh); }
+  #itog[data-status="declined"], #itog[data-status="error"] { border-color: var(--oshibka); }
+  #vybor { color: var(--tihiy); font-size: 14px; margin: 4px 0 0; }
+  @media (min-width: 640px) {
+    .tarify { grid-template-columns: repeat(3, 1fr); }
+    body { padding: 24px 24px 48px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Абонемент в фитнес-клуб</h1>
+
+  <h2>Выберите абонемент</h2>
+  <div class="tarify" id="tarify" role="radiogroup" aria-label="Тарифы"></div>
+  <p id="oshibka-tarif" class="oshibka" role="alert" aria-live="polite"></p>
+
+  <h2>Данные для оплаты</h2>
+  <form id="forma" novalidate>
+    <div class="pole">
+      <label for="imya">Имя и фамилия</label>
+      <input id="imya" name="name" autocomplete="name" maxlength="100" placeholder="Ярослав Петров">
+      <p id="oshibka-imya" class="oshibka" role="alert" aria-live="polite"></p>
+    </div>
+    <div class="pole">
+      <label for="telefon">Телефон</label>
+      <input id="telefon" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="+7 999 123-45-67">
+      <p id="oshibka-telefon" class="oshibka" role="alert" aria-live="polite"></p>
+    </div>
+    <div class="pole">
+      <label for="pochta">Email</label>
+      <input id="pochta" name="email" type="email" autocomplete="email" maxlength="100" placeholder="you@example.com">
+      <p id="oshibka-pochta" class="oshibka" role="alert" aria-live="polite"></p>
+    </div>
+    <div class="pole">
+      <label for="karta">Номер карты</label>
+      <input id="karta" name="card" inputmode="numeric" autocomplete="cc-number" maxlength="19" placeholder="0000 0000 0000 0000">
+      <p id="oshibka-karta" class="oshibka" role="alert" aria-live="polite"></p>
+    </div>
+    <div class="ryad">
+      <div class="pole">
+        <label for="srok">Срок действия</label>
+        <input id="srok" name="exp" inputmode="numeric" autocomplete="cc-exp" maxlength="5" placeholder="ММ/ГГ">
+        <p id="oshibka-srok" class="oshibka" role="alert" aria-live="polite"></p>
+      </div>
+      <div class="pole">
+        <label for="cvc">CVC</label>
+        <input id="cvc" name="cvc" inputmode="numeric" autocomplete="cc-csc" maxlength="3" placeholder="123">
+        <p id="oshibka-cvc" class="oshibka" role="alert" aria-live="polite"></p>
+      </div>
+    </div>
+    <p id="vybor"></p>
+    <button id="knopka" type="submit">Оплатить</button>
+    <p id="oshibka-obshchaya" class="oshibka" role="alert" aria-live="polite"></p>
+  </form>
+
+  <div id="itog" role="status" aria-live="polite"></div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var tarify = [];
+  var vybran = null;
+  var zhdet = false;                       // защита от повторного нажатия
+  var TAYMAUT = 15000;
+
+  var el = {
+    tarify: document.getElementById('tarify'),
+    knopka: document.getElementById('knopka'),
+    vybor: document.getElementById('vybor'),
+    itog: document.getElementById('itog'),
+    forma: document.getElementById('forma'),
+    imya: document.getElementById('imya'),
+    telefon: document.getElementById('telefon'),
+    pochta: document.getElementById('pochta'),
+    karta: document.getElementById('karta'),
+    srok: document.getElementById('srok'),
+    cvc: document.getElementById('cvc')
+  };
+
+  // Текст всегда пишем через textContent — вставка кода из ввода не исполняется.
+  function skazat(id, tekst) {
+    var uzel = document.getElementById(id);
+    if (uzel) { uzel.textContent = tekst || ''; }
+  }
+
+  function ochistit_oshibki() {
+    ['oshibka-tarif', 'oshibka-imya', 'oshibka-telefon', 'oshibka-pochta',
+     'oshibka-karta', 'oshibka-srok', 'oshibka-cvc', 'oshibka-obshchaya']
+      .forEach(function (id) { skazat(id, ''); });
+    el.itog.style.display = 'none';
+    el.itog.removeAttribute('data-status');
+    el.itog.textContent = '';
+  }
+
+  function dengi(summa) {
+    return String(summa).replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009') + ' \u20bd';
+  }
+
+  function bez_probelov(tekst) { return String(tekst).replace(/[\s\u00a0\u2009]/g, ''); }
+
+  // Бэкенд может прислать дату по-разному — на экран выводим ДД.ММ.ГГГГ.
+  function data_ddmmgggg(znachenie) {
+    var tekst = String(znachenie == null ? '' : znachenie).trim();
+    var iso = tekst.match(/^(\d{4})-(\d{2})-(\d{2})/);            // 2027-01-17 (может быть со временем)
+    if (iso) { return iso[3] + '.' + iso[2] + '.' + iso[1]; }
+    var nashe = tekst.match(/^\d{2}\.\d{2}\.\d{4}/);              // уже 17.01.2027
+    if (nashe) { return nashe[0]; }
+    return tekst;
+  }
+
+  function pokazat_tarify() {
+    el.tarify.textContent = '';
+    tarify.forEach(function (tarif) {
+      var knopka = document.createElement('button');
+      knopka.type = 'button';
+      knopka.className = 'tarif';
+      knopka.setAttribute('role', 'radio');
+      knopka.setAttribute('aria-checked', 'false');
+      knopka.dataset.id = tarif.id;
+      knopka.dataset.cena = tarif.price;
+      knopka.dataset.nazvanie = tarif.name;
+      var nazvanie = document.createElement('span');
+      nazvanie.className = 'nazvanie';
+      nazvanie.textContent = tarif.name;
+      var cena = document.createElement('span');
+      cena.className = 'cena';
+      cena.textContent = dengi(tarif.price);
+      var srok = document.createElement('span');
+      srok.className = 'srok';
+      srok.textContent = tarif.days === 1 ? 'на 1 день' : 'на ' + tarif.days + ' дней';
+      knopka.appendChild(nazvanie); knopka.appendChild(cena); knopka.appendChild(srok);
+      knopka.addEventListener('click', function () { vybrat(tarif); });
+      el.tarify.appendChild(knopka);
+    });
+    if (tarify.length) { vybrat(tarify[0]); }
+    else { skazat('oshibka-tarif', 'Не получилось загрузить тарифы. Обновите страницу.'); }
+  }
+
+  function vybrat(tarif) {
+    if (zhdet) { return; }                 // во время запроса выбор не меняем
+    vybran = tarif;
+    Array.prototype.forEach.call(el.tarify.children, function (uzel) {
+      var eto_on = String(uzel.dataset.id) === String(tarif.id);
+      uzel.classList.toggle('vybran', eto_on);
+      uzel.setAttribute('aria-checked', eto_on ? 'true' : 'false');
+      uzel.tabIndex = eto_on ? 0 : -1;
+    });
+    el.knopka.textContent = 'Оплатить ' + dengi(tarif.price);
+    el.vybor.textContent = 'Выбран абонемент «' + tarif.name + '» — ' + dengi(tarif.price) + '.';
+  }
+
+  // --- форматирование полей
+  el.karta.addEventListener('input', function () {
+    var cifry = el.karta.value.replace(/\D/g, '').slice(0, 16);
+    el.karta.value = cifry.replace(/(\d{4})(?=\d)/g, '$1 ');
+  });
+  el.srok.addEventListener('input', function () {
+    var cifry = el.srok.value.replace(/\D/g, '').slice(0, 4);
+    el.srok.value = cifry.length > 2 ? cifry.slice(0, 2) + '/' + cifry.slice(2) : cifry;
+  });
+  el.cvc.addEventListener('input', function () {
+    el.cvc.value = el.cvc.value.replace(/\D/g, '').slice(0, 3);
+  });
+  el.imya.addEventListener('input', function () {
+    if (el.imya.value.length > 100) { el.imya.value = el.imya.value.slice(0, 100); }
+  });
+
+  // --- проверка перед отправкой (в том же духе, что и коды сервера)
+  function proverit() {
+    var bedy = {};
+    if (!vybran) { bedy.tarif = 'Выберите, пожалуйста, абонемент.'; }
+    if (!el.imya.value.trim()) { bedy.imya = 'Напишите, пожалуйста, имя.'; }
+    if (!/^[0-9+ ()\-]+$/.test(el.telefon.value) ||
+        el.telefon.value.replace(/\D/g, '').length < 10) {
+      bedy.telefon = 'Телефон: цифры, «+», «-», скобки и пробелы, не меньше 10 цифр.';
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[a-zA-Zа-яА-Я]{2,}$/.test(el.pochta.value.trim())) {
+      bedy.pochta = 'Проверьте, пожалуйста, email.';
+    }
+    if (el.karta.value.replace(/\D/g, '').length !== 16) {
+      bedy.karta = 'Номер карты — 16 цифр.';
+    }
+    var srok = el.srok.value;
+    var mesyac = parseInt(srok.slice(0, 2), 10), god = parseInt(srok.slice(3), 10);
+    var seychas = new Date();
+    var proshel = isNaN(god) || !mesyac || mesyac < 1 || mesyac > 12 ||
+      (2000 + god) < seychas.getFullYear() ||
+      ((2000 + god) === seychas.getFullYear() && mesyac < seychas.getMonth() + 1);
+    if (!/^\d{2}\/\d{2}$/.test(srok) || proshel) {
+      bedy.srok = mesyac < 1 || mesyac > 12 ? 'Месяц — от 01 до 12.' : 'Проверьте срок действия (ММ/ГГ).';
+    }
+    if (el.cvc.value.length !== 3) { bedy.cvc = 'CVC — три цифры.'; }
+    return bedy;
+  }
+
+  var KOD_POLEY = {
+    no_tarif: 'oshibka-tarif',
+    bad_phone: 'oshibka-telefon',
+    bad_email: 'oshibka-pochta',
+    bad_card: 'oshibka-karta',
+    bad_exp: 'oshibka-srok',
+    invalid_json: 'oshibka-obshchaya'
+  };
+  var TEKSTY = {
+    no_tarif: 'Такого абонемента нет. Выберите, пожалуйста, другой.',
+    bad_phone: 'Телефон не подошёл. Проверьте, пожалуйста, номер.',
+    bad_email: 'Email не подошёл. Проверьте, пожалуйста, адрес.',
+    bad_card: 'Карта не подошла. Проверьте, пожалуйста, номер и CVC.',
+    bad_exp: 'Срок действия карты не подошёл. Проверьте, пожалуйста, ММ/ГГ.',
+    invalid_json: 'Что-то пошло не так, попробуйте ещё раз.'
+  };
+
+  function soobshchenie(status, tekst) {
+    el.itog.textContent = tekst;
+    el.itog.dataset.status = status;
+    el.itog.style.display = 'block';
+  }
+
+  function zakonchit() {
+    zhdet = false;
+    el.knopka.disabled = false;
+    zablokirovat_tarify(false);
+  }
+
+  function zablokirovat_tarify(zablokirovat) {
+    Array.prototype.forEach.call(el.tarify.children, function (uzel) {
+      uzel.disabled = !!zablokirovat;
+    });
+  }
+
+  function otpravit() {
+    var bedy = proverit();
+    ochistit_oshibki();
+    var est = Object.keys(bedy);
+    if (est.length) {
+      Object.keys(bedy).forEach(function (klyuch) {
+        skazat('oshibka-' + (klyuch === 'tarif' ? 'tarif' : klyuch), bedy[klyuch]);
+      });
+      return;
+    }
+    var tarif_zakaza = vybran;             // оплачиваем именно его: выбор на время запроса фиксируем
+    var telo = {
+      tarif_id: tarif_zakaza.id,
+      name: el.imya.value.trim(),
+      phone: el.telefon.value.trim(),
+      email: el.pochta.value.trim(),
+      card: {
+        number: el.karta.value,
+        exp: el.srok.value,
+        cvc: el.cvc.value
+      }
+    };
+    if (zhdet) { return; }                 // второе нажатие ничего не отправляет
+    zhdet = true;
+    el.knopka.disabled = true;
+    zablokirovat_tarify(true);             // пока идёт оплата, тариф не меняем
+
+    var taymer = new AbortController();
+    var budilnik = setTimeout(function () { taymer.abort(); }, TAYMAUT);
+
+    fetch('/api/pokupka', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(telo),
+      signal: taymer.signal
+    }).then(function (otvet) {
+      return otvet.json().catch(function () { return {}; }).then(function (dannye) {
+        return { kod: otvet.status, dannye: dannye };
+      });
+    }).then(function (r) {
+      clearTimeout(budilnik);
+      if (r.dannye && r.dannye.error) {
+        var kod = r.dannye.error;
+        skazat(KOD_POLEY[kod] || 'oshibka-obshchaya', TEKSTY[kod] || TEKSTY.invalid_json);
+        soobshchenie('error', TEKSTY[kod] || TEKSTY.invalid_json);
+      } else if (r.dannye && r.dannye.status === 'paid') {
+        soobshchenie('paid', 'Абонемент «' + tarif_zakaza.name + '» оплачен до ' +
+          data_ddmmgggg(r.dannye.until) +
+          ', заказ №' + r.dannye.order_id + '. Оплачено ' + dengi(r.dannye.total) +
+          '. Плательщик: ' + telo.name + '.');
+      } else if (r.dannye && r.dannye.status === 'declined') {
+        soobshchenie('declined', 'Банк отклонил оплату. Проверьте карту или попробуйте другую.');
+      } else {
+        soobshchenie('error', 'Не получилось оформить оплату. Попробуйте, пожалуйста, ещё раз.');
+      }
+    }).catch(function () {
+      clearTimeout(budilnik);
+      soobshchenie('error', 'Сервер не ответил. Проверьте связь и попробуйте ещё раз.');
+    }).then(zakonchit);
+  }
+
+  el.forma.addEventListener('submit', function (sobytie) {
+    sobytie.preventDefault();
+    otpravit();
+  });
+
+  // тарифы
+  fetch('/api/tarify').then(function (o) { return o.json(); }).then(function (spisok) {
+    tarify = Array.isArray(spisok) ? spisok : [];
+    pokazat_tarify();
+  }).catch(function () {
+    skazat('oshibka-tarif', 'Не получилось загрузить тарифы. Обновите страницу.');
+  });
+})();
+</script>
+</body>
+</html>

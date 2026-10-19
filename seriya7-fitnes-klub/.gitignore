@@ -1,0 +1,17 @@
+# Local state and credentials: never publish these.
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.venv/
+test_*/
+# Generated delivery proofs / archives (not source).
+git_log.txt
+git_status.txt
+fitnes.zip
+fitnes.bundle
